@@ -173,6 +173,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .cat .lim.over{color:var(--out)}
 .linkbtn{color:var(--ewallet);font-size:14px;padding:6px 0}
 .head2{display:flex;justify-content:space-between;align-items:center}
+.head2 span{display:flex;gap:14px}
 .small{border-top:1px dashed var(--line);margin-top:2px}
 .small .ar{padding:8px 0 8px 12px;font-size:14px;color:var(--ink-2)}
 .op{cursor:pointer;width:100%;text-align:left}
@@ -200,6 +201,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:30}
 .grp{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,var(--sheet)),var(--sheet) 90px)}
 
+
+.cat{display:block;width:100%;text-align:left}
+.cat .chev.r90{width:14px;height:14px;margin-left:6px;vertical-align:-2px;transform:none}
+.rangebox{display:flex;align-items:center;gap:10px;padding:8px 0 12px;color:var(--ink-2)}
+.rangebox input{flex:1;font:inherit;color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:9px 10px;min-width:0}
+.pan textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;resize:vertical}
+.lim-row input.wide{width:100%;text-align:left}
+.pan .row.op{padding:11px 0}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -401,33 +410,70 @@ async function post(body){
 }
 
 let edit = null;
-function openOp(i){
-  const o = state.vis[i]; if (!o || o.kind === "adjustment") return;
+function openOp(i){ const o = state.vis[i]; if (o) { state.back = null; openOpId(o.id); } }
+function openOpId(id){
+  const o = state.data.ops.find(x => x.id === id); if (!o || o.kind === "adjustment") return;
   const pos = o.amt > 0;
-  edit = {id:o.id, kind:o.kind, catId:o.catId || "", pos};
+  edit = {id:o.id, kind:o.kind, catId:o.catId || "", note:o.note || "", note0:o.note || "", pos};
   const kinds = [[pos ? "income" : "expense", pos ? "Доход" : "Расход"], ["exchange","Обмен"], ["transfer","Перевод"]];
-  const title = o.who || o.note || o.cat || KIND[o.kind];
-  openSheet(`<h2>${esc(title)}</h2><div class="sub2">${o.amt<0?"−":"+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}${o.eur && o.asset!=="EUR" ? ", ≈ " + eur(Math.abs(o.eur)) : ""} · ${esc(o.acc)}</div>
+  const title = o.who || o.cat || KIND[o.kind];
+  const t = new Date(o.d);
+  openSheet(`<h2>${esc(title)}</h2><div class="sub2">${o.amt<0?"−":"+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}${o.eur && o.asset!=="EUR" ? ", ≈ " + eur(Math.abs(o.eur)) : ""} · ${esc(o.acc)} · ${t.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})}, ${t.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}</div>
     <div class="lbl">Что это за операция</div>
-    <div class="opts" id="kopts">${kinds.map(([k,t]) => `<button aria-pressed="${edit.kind===k}" onclick="pickKind('${k}')">${t}</button>`).join("")}</div>
+    <div class="opts" id="kopts">${kinds.map(([k,t2]) => `<button aria-pressed="${edit.kind===k}" onclick="pickKind('${k}')">${t2}</button>`).join("")}</div>
     <div id="catbox"></div>
+    <div class="lbl" style="margin-top:12px">Заметка (за что именно)</div>
+    <textarea id="notei" rows="2" maxlength="500" placeholder="Например: линзы 70 €, продукты 20 €, зоопарк 50 €" oninput="edit.note=this.value">${esc(edit.note)}</textarea>
     <button class="save" id="sv" onclick="saveOp()">Сохранить</button>`);
   catBox();
 }
 function pickKind(k){ edit.kind = k; document.querySelectorAll("#kopts button").forEach(b => b.setAttribute("aria-pressed", b.textContent === ({income:"Доход",expense:"Расход",exchange:"Обмен",transfer:"Перевод"})[k])); catBox(); }
 function catBox(){
   const f = edit.kind === "expense" ? "expense" : edit.kind === "income" ? "income" : null;
-  $("#catbox").innerHTML = f ? `<div class="lbl">Категория</div><select id="catsel" onchange="edit.catId=this.value"><option value="">Без категории</option>${flowCats(f).map(c => `<option value="${c.id}" ${c.id===edit.catId?"selected":""}>${esc(c.name)}</option>`).join("")}</select>` : "";
+  $("#catbox").innerHTML = f ? `<div class="lbl">Категория</div><select id="catsel" onchange="catPick(this.value)"><option value="">Без категории</option>${flowCats(f).map(c => `<option value="${c.id}" ${c.id===edit.catId?"selected":""}>${esc(c.name)}</option>`).join("")}<option value="__new">+ Новая категория…</option></select><input id="newcat" placeholder="Название новой категории" maxlength="40" style="display:none;margin-top:8px">` : "";
 }
+function catPick(v){ edit.catId = v; const n = $("#newcat"); if (n) { n.style.display = v === "__new" ? "" : "none"; if (v === "__new") n.focus(); } }
 async function saveOp(){
   const b = $("#sv"); b.disabled = true; b.textContent = "Сохраняю…";
   try {
+    const fl = edit.kind === "expense" ? "expense" : edit.kind === "income" ? "income" : null;
+    if (fl && edit.catId === "__new") {
+      const nm = ($("#newcat").value || "").trim(); if (!nm) throw new Error("Введи название категории");
+      const r = await post({action:"add_category", name:nm, flow:fl});
+      const cat = r.cat || {id:"n-" + Date.now(), name:nm, flow:fl};
+      state.data.cats.push(cat); edit.catId = cat.id;
+    }
     await post({action:"set_kind", id:edit.id, kind:edit.kind});
-    if (edit.kind === "expense" || edit.kind === "income") await post({action:"set_category", id:edit.id, category_id: edit.catId || null});
+    if (fl) await post({action:"set_category", id:edit.id, category_id: edit.catId || null});
+    if ((edit.note || "") !== (edit.note0 || "")) await post({action:"set_note", id:edit.id, note:edit.note});
     const o = state.data.ops.find(x => x.id === edit.id);
-    if (o) { o.kind = edit.kind; o.status = "confirmed"; o.catId = (edit.kind === "expense" || edit.kind === "income") ? (edit.catId || null) : null; o.cat = o.catId ? ((state.data.cats.find(c => c.id === o.catId)||{}).name || null) : null; }
-    closeSheet(); toast("Сохранено"); render();
+    if (o) { o.kind = edit.kind; o.status = "confirmed"; o.note = edit.note || null; o.catId = fl ? (edit.catId || null) : null; o.cat = o.catId ? ((state.data.cats.find(c => c.id === o.catId)||{}).name || null) : null; }
+    const back = state.back; state.back = null;
+    closeSheet(); toast("Сохранено"); render(); if (back) back();
   } catch (e) { b.disabled = false; b.textContent = "Сохранить"; toast(e.message); }
+}
+function openCats(){
+  const row = c => `<div class="lim-row"><input class="wide" data-id="${c.id}" value="${esc(c.name)}" maxlength="40" aria-label="Название категории"></div>`;
+  openSheet(`<h2>Категории</h2><div class="sub2">Переименуй существующие или добавь свои. Старые операции остаются в своих категориях.</div>
+    <div class="lbl">Расходы</div>${flowCats("expense").map(row).join("")}
+    <div class="lim-row"><input class="wide" id="nc-e" placeholder="+ Новая категория расходов" maxlength="40"></div>
+    <div class="lbl" style="margin-top:12px">Доходы</div>${flowCats("income").map(row).join("")}
+    <div class="lim-row"><input class="wide" id="nc-i" placeholder="+ Новая категория доходов" maxlength="40"></div>
+    <button class="save" id="sv" onclick="saveCats()">Сохранить</button>`);
+}
+async function saveCats(){
+  const b = $("#sv"); b.disabled = true; b.textContent = "Сохраняю…";
+  try {
+    for (const inp of document.querySelectorAll("#ov input[data-id]")) {
+      const c = state.data.cats.find(x => x.id === inp.dataset.id), v = inp.value.trim();
+      if (c && v && v !== c.name) { await post({action:"rename_category", id:c.id, name:v}); c.name = v; state.data.ops.forEach(o => { if (o.catId === c.id) o.cat = v; }); }
+    }
+    for (const [id, fl] of [["nc-e","expense"],["nc-i","income"]]) {
+      const v = ($("#" + id).value || "").trim(); if (!v) continue;
+      const r = await post({action:"add_category", name:v, flow:fl}); state.data.cats.push(r.cat || {id:"n-" + Date.now() + fl, name:v, flow:fl});
+    }
+    closeSheet(); toast("Категории сохранены"); render();
+  } catch (e) { b.disabled = false; b.textContent = "Сохранить"; toast(e.message.includes("duplicate") ? "Такая категория уже есть" : e.message); }
 }
 function openLimits(){
   const bs = budgetState(), cats = flowCats("expense");
@@ -527,28 +573,55 @@ function accRow(gname, a){
 
 const CATC = ['#2F7DE1','#169E7A','#E3A21A','#6B5CE7','#D6453D','#12A5B5','#C0568F'];
 const isSpend = o => o.kind === "expense" || o.kind === "fee";
+const pad2 = n => String(n).padStart(2, "0");
+const dkey = d => d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+function period(){
+  const mode = state.sp || "month";
+  let t0, t1, label, p0, p1;
+  if (mode === "day") {
+    t0 = new Date((state.ref || dkey(new Date())) + "T00:00:00"); t1 = addDays(t0, 1); p0 = addDays(t0, -1); p1 = t0;
+    label = t0.toLocaleDateString("ru-RU", {day:"numeric", month:"long", weekday:"short"});
+  } else if (mode === "week") {
+    const r = new Date((state.ref || dkey(new Date())) + "T00:00:00"), dow = (r.getDay() + 6) % 7;
+    t0 = addDays(r, -dow); t1 = addDays(t0, 7); p0 = addDays(t0, -7); p1 = t0;
+    const e = addDays(t1, -1);
+    label = t0.getDate() + (t0.getMonth() !== e.getMonth() ? " " + MSHORT[t0.getMonth()] : "") + " – " + e.getDate() + " " + MSHORT[e.getMonth()];
+  } else if (mode === "range") {
+    const f = state.from || dkey(addDays(new Date(), -13)), t = state.to || dkey(new Date());
+    t0 = new Date(f + "T00:00:00"); t1 = addDays(new Date(t + "T00:00:00"), 1);
+    const len = Math.round((t1 - t0) / 864e5); p0 = addDays(t0, -len); p1 = t0;
+    label = "Свой период";
+  } else {
+    const [y, mm] = state.month.split("-").map(Number);
+    t0 = new Date(y, mm-1, 1); t1 = new Date(y, mm, 1); p0 = new Date(y, mm-2, 1); p1 = t0;
+    label = MONTHS[mm-1][0].toUpperCase() + MONTHS[mm-1].slice(1) + " " + y;
+  }
+  return {mode, t0, t1, p0, p1, label};
+}
+const inP = (o, a, b) => { const t = new Date(o.d).getTime(); return t >= a.getTime() && t < b.getTime(); };
 function spend(){
-  const d = state.data, m = state.month, i = state.months.indexOf(m);
-  const mo = d.ops.filter(o => ym(o.d) === m);
+  const d = state.data, P = period(), i = state.months.indexOf(state.month);
+  const mo = d.ops.filter(o => inP(o, P.t0, P.t1));
   const out = mo.filter(isSpend).reduce((s,o)=>s - o.eur, 0);
   const inc = mo.filter(o => o.kind === "income").reduce((s,o)=>s + o.eur, 0);
-  const by = {}, lim = {}; (d.budgets || []).forEach(b => lim[b.category_id] = Number(b.monthly_eur));
-  mo.filter(isSpend).forEach(o => { const k = o.catId || "_"; by[k] = by[k] || {id:o.catId, nm:o.cat || "Без категории", v:0}; by[k].v -= o.eur; });
-  Object.keys(lim).forEach(id => { if (!by[id]) by[id] = {id, nm:((d.cats||[]).find(c => c.id === id)||{}).name || "Категория", v:0}; });
-  const cats = Object.values(by).sort((a,b) => b.v - a.v).map(c => [c.nm, c.v, c.id, lim[c.id]]);
-  const max = cats.length ? Math.max(cats[0][1], 1) : 1;
-  const [y, mm] = m.split("-").map(Number);
-  const prev = state.months[i-1] ? d.ops.filter(o => ym(o.d) === state.months[i-1] && isSpend(o)).reduce((s,o)=>s-o.eur,0) : null;
+  const by = {}, lim = {}; if (P.mode === "month") (d.budgets || []).forEach(b => lim[b.category_id] = Number(b.monthly_eur));
+  mo.filter(isSpend).forEach(o => { const k = o.catId || "_"; by[k] = by[k] || {id:o.catId, nm:o.cat || "Без категории", v:0, n:0}; by[k].v -= o.eur; by[k].n++; });
+  Object.keys(lim).forEach(id => { if (!by[id]) by[id] = {id, nm:((d.cats||[]).find(c => c.id === id)||{}).name || "Категория", v:0, n:0}; });
+  const cats = Object.values(by).sort((a,b) => b.v - a.v);
+  const max = cats.length ? Math.max(cats[0].v, 1) : 1;
+  const prev = d.ops.filter(o => inP(o, P.p0, P.p1) && isSpend(o)).reduce((s,o)=>s-o.eur, 0);
+  const pname = {day:"вчера", week:"на прошлой неделе", month:"в прошлом месяце", range:"в предыдущем таком же периоде"}[P.mode];
   let note = "";
-  if (cats.length && out > 0) note = `Больше всего ушло на «${esc(cats[0][0])}»: ${Math.round(cats[0][1]/out*100)}% трат.`;
-  if (prev) { const ch = (out - prev) / prev * 100; note += ` ${ch >= 0 ? "Это на " + Math.round(ch) + "% больше" : "Это на " + Math.round(-ch) + "% меньше"}, чем в прошлом месяце.`; }
-
+  if (cats.length && out > 0) note = `Больше всего ушло на «${esc(cats[0].nm)}»: ${Math.round(cats[0].v/out*100)}% трат.`;
+  if (prev > 0 && out > 0) { const ch = (out - prev) / prev * 100; note += ` ${ch >= 0 ? "Это на " + Math.round(ch) + "% больше" : "Это на " + Math.round(-ch) + "% меньше"}, чем ${pname}.`; }
+  const modes = [["day","День"],["week","Неделя"],["month","Месяц"],["range","Период"]];
+  const nav = P.mode === "range"
+    ? `<div class="rangebox"><input type="date" value="${state.from || dkey(addDays(new Date(), -13))}" onchange="setRange2('from',this.value)" aria-label="С даты"><span>—</span><input type="date" value="${state.to || dkey(new Date())}" onchange="setRange2('to',this.value)" aria-label="По дату"></div>`
+    : `<div class="month"><button onclick="shift(-1)" ${P.mode==="month" && i<=0 ? "disabled" : ""} aria-label="Назад">‹</button><h2>${esc(P.label)}</h2><button onclick="shift(1)" ${P.t1 > new Date() && P.mode !== "month" ? "disabled" : P.mode==="month" && i>=state.months.length-1 ? "disabled" : ""} aria-label="Вперёд">›</button></div>`;
   return `
-    <div class="month">
-      <button onclick="shift(-1)" ${i<=0?"disabled":""} aria-label="Предыдущий месяц">‹</button>
-      <h2>${MONTHS[mm-1][0].toUpperCase() + MONTHS[mm-1].slice(1)} ${y}</h2>
-      <button onclick="shift(1)" ${i>=state.months.length-1?"disabled":""} aria-label="Следующий месяц">›</button>
-    </div>
+    <div class="chips">${modes.map(([k,t]) => `<button aria-pressed="${P.mode===k}" onclick="setMode('${k}')">${t}</button>`).join("")}</div>
+    ${nav}
     <div class="sheet">
       <div class="kpis">
         <div><small>Расходы</small><b class="out">${eur(out)}</b></div>
@@ -558,21 +631,43 @@ function spend(){
       ${note ? `<p class="note">${note}</p>` : ""}
     </div>
     <div class="sheet">
-      <div class="head2"><h3>По категориям</h3><button class="linkbtn" onclick="openLimits()">Лимиты</button></div>
-      ${cats.length ? cats.map(([k,v,id,l],i) => {
+      <div class="head2"><h3>По категориям</h3><span><button class="linkbtn" onclick="openLimits()">Лимиты</button> <button class="linkbtn" onclick="openCats()">Категории</button></span></div>
+      ${cats.length ? cats.map((c,i) => {
+        const k = c.nm, v = c.v, l = lim[c.id];
         const base = CATC[i % CATC.length];
-        const pcL = l ? v / l : 0, c = !l ? base : pcL > 1 ? "var(--out)" : pcL > .8 ? "var(--uah)" : base;
+        const pcL = l ? v / l : 0, col = !l ? base : pcL > 1 ? "var(--out)" : pcL > .8 ? "var(--uah)" : base;
         const w = l ? Math.min(100, Math.max(2, pcL * 100)) : Math.max(2, v / max * 100);
-        const lt = l ? `<div class="lim ${pcL > 1 ? "over" : ""}"><span>Лимит ${eur(l)}</span><span>${pcL > 1 ? "превышен на " + eur(v - l) : "осталось " + eur(l - v)}</span></div>` : "";
-        return `<div class="cat"><div class="t"><span><i class="dot" style="background:${base}"></i>${esc(k)}</span><span>${eur(v)}</span></div><div class="bar"><i style="width:${w}%;background:${c}"></i></div>${lt}</div>`; }).join("") : '<div class="empty">В этом месяце трат нет. Напиши боту «5€ кофе», и трата появится здесь.</div>'}
+        const lt = l ? `<div class="lim ${pcL > 1 ? "over" : ""}"><span>Лимит ${eur(l)}</span><span>${pcL > 1 ? "превышен на " + eur(v - l) : "осталось " + eur(l - v)}</span></div>` : `<div class="lim"><span>${c.n} ${plural(c.n,"операция","операции","операций")}</span><span></span></div>`;
+        return `<button class="cat" onclick="openCat(${i})" aria-label="Показать операции: ${esc(k)}"><div class="t"><span><i class="dot" style="background:${base}"></i>${esc(k)}</span><span>${eur(v)}<svg class="chev r90" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div><div class="bar"><i style="width:${w}%;background:${col}"></i></div>${lt}</button>`; }).join("") : '<div class="empty">За этот период трат нет. Напиши боту «5€ кофе», и трата появится здесь.</div>'}
     </div>
-    <div class="sheet trend">
+    ${P.mode === "month" ? `<div class="sheet trend">
       <h3>Полгода</h3>
       ${trend()}
       <div class="keys"><span><i class="dot" style="background:var(--out)"></i>Расходы</span><span><i class="dot" style="background:var(--in)"></i>Доходы</span></div>
-    </div>`;
+    </div>` : ""}`;
 }
-function shift(n){ const i = state.months.indexOf(state.month) + n; if (state.months[i]) { state.month = state.months[i]; haptic(); pane(); } }
+function setMode(m){ state.sp = m; haptic(); if (m === "day" || m === "week") state.ref = state.ref || dkey(new Date()); pane(); }
+function setRange2(k, v){ state[k] = v; if (state.from && state.to && state.from > state.to) { const t = state.from; state.from = state.to; state.to = t; } pane(); }
+function shift(n){
+  const m = state.sp || "month";
+  if (m === "month") { const i = state.months.indexOf(state.month) + n; if (state.months[i]) { state.month = state.months[i]; haptic(); pane(); } return; }
+  const r = new Date((state.ref || dkey(new Date())) + "T00:00:00"); state.ref = dkey(addDays(r, n * (m === "week" ? 7 : 1))); haptic(); pane();
+}
+function periodOps(){ const P = period(); return state.data.ops.filter(o => inP(o, P.t0, P.t1) && isSpend(o)); }
+function openCat(i){
+  const P = period(), d = state.data;
+  const mo = periodOps(), by = {};
+  mo.forEach(o => { const k = o.catId || "_"; by[k] = by[k] || {id:o.catId, nm:o.cat || "Без категории", v:0}; by[k].v -= o.eur; });
+  const lim = {}; if (P.mode === "month") (d.budgets || []).forEach(b => lim[b.category_id] = Number(b.monthly_eur));
+  Object.keys(lim).forEach(id => { if (!by[id]) by[id] = {id, nm:((d.cats||[]).find(c => c.id === id)||{}).name || "Категория", v:0}; });
+  const c = Object.values(by).sort((a,b) => b.v - a.v)[i]; if (!c) return;
+  const list = mo.filter(o => (o.catId || "_") === (c.id || "_")).sort((a,b) => b.d.localeCompare(a.d));
+  state.back = () => openCat(i);
+  openSheet(`<h2>${esc(c.nm)}</h2><div class="sub2">${esc(P.label)} · ${eur(c.v)} · ${list.length} ${plural(list.length,"операция","операции","операций")}</div>
+    ${list.length ? list.map(o => { const t = new Date(o.d); const title = o.who || o.note || o.cat || KIND[o.kind];
+      return `<button class="row op" onclick="openOpId('${o.id}')"><div class="l"><div>${esc(title)}</div><div class="meta">${t.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})}, ${t.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})} · ${esc(o.acc)}${o.who && o.note ? " · " + esc(o.note) : ""}</div></div>
+        <div class="r"><div class="out">−${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.asset!=="EUR"&&o.eur?`<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>`:""}</div></button>`; }).join("") : '<div class="empty">Операций нет.</div>'}`);
+}
 
 function trend(){
   const d = state.data, ms = state.months.slice(-6);
@@ -610,7 +705,7 @@ function ops(){
     return `<div class="day">${label}</div><div class="sheet">${g.items.map(o => {
       const idx = list.indexOf(o);
       const title = o.who || o.note || o.cat || KIND[o.kind];
-      const meta = [o.cat || KIND[o.kind], o.acc].filter(Boolean).join(", ");
+      const meta = [o.cat || KIND[o.kind], o.acc, o.who && o.note ? o.note : null].filter(Boolean).join(" · ");
       const cls = o.amt < 0 ? "out" : "in";
       const glyph = {expense:"↑", fee:"↑", income:"↓", transfer:"⇄", exchange:"⇄", adjustment:"≈"}[o.kind] || "·";
       return `<${o.kind === "adjustment" ? "div" : "button"} class="row op" ${o.kind === "adjustment" ? "" : `onclick="openOp(${idx})" aria-label="Изменить: ${esc(title)}"`}><span class="ic ${o.kind}">${glyph}</span><div class="l"><div>${esc(title)}${o.status === "needs_review" && o.kind !== "adjustment" ? '<span class="badge">разобрать</span>' : ""}</div><div class="meta">${esc(meta)}</div></div>
