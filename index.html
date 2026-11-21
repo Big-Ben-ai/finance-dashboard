@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Финансы</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F5; --sheet:#FFFFFF; --ink:#152033; --ink-2:#5A6577; --ink-3:#94A0B2; --line:#E2E7EE;
+  --crypto:#169E7A; --uah:#E3A21A; --cash:#6B5CE7; --ewallet:#2F7DE1; --bank:#7C8AA0;
+  --out:#D6453D; --in:#169E7A; --focus:#2F7DE1;
+}
+[data-theme="dark"]{
+  --bg:#151B26; --sheet:#1D2533; --ink:#E9EDF3; --ink-2:#A3ADBD; --ink-3:#6E7A8D; --line:#2A3343;
+  --crypto:#2BB991; --uah:#F0B43A; --cash:#8B7EF2; --ewallet:#4B95F0; --bank:#8E9BB0;
+  --out:#F0685F; --in:#2BB991;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+/* top */
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 6px;color:var(--ink-2);font-size:13px}
+.top button{padding:6px 10px;border-radius:999px;background:var(--sheet);color:var(--ink-2)}
+
+/* hero */
+.hero{padding:10px 0 18px}
+.total{font-weight:300;font-size:46px;letter-spacing:-.02em;line-height:1.05}
+.total .cur{font-size:26px;color:var(--ink-2);margin-left:4px}
+.sub{color:var(--ink-2);margin-top:6px;font-size:14px}
+.ribbon{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:20px 0 14px;background:var(--line);gap:2px}
+.ribbon span{display:block;height:100%;transform-origin:left;animation:grow .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.ribbon span{animation:none}}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.legend div{display:flex;flex-direction:column}
+.legend b{font-weight:500;font-size:15px}
+.legend small{color:var(--ink-2);font-size:13px;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+/* tabs */
+.tabs{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px}
+.seg{display:flex;background:var(--sheet);border-radius:12px;padding:4px}
+.seg button{flex:1;padding:8px 0;border-radius:9px;color:var(--ink-2);font-weight:500;font-size:14px}
+.seg button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+
+/* sheet */
+.sheet{background:var(--sheet);border-radius:20px;padding:6px 16px;margin-bottom:12px}
+.ghead{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 6px;font-weight:500}
+.ghead span:first-child{display:flex;align-items:center;gap:8px}
+.ghead span:last-child{color:var(--ink-2);font-weight:400}
+.row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .l{min-width:0}
+.row .l div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .meta{color:var(--ink-2);font-size:13px}
+.row .r{text-align:right;flex:none}
+.out{color:var(--out)} .in{color:var(--in)}
+
+/* spending */
+.month{display:flex;align-items:center;justify-content:space-between;padding:10px 0 4px}
+.month button{width:36px;height:36px;border-radius:50%;background:var(--sheet);font-size:18px;color:var(--ink-2)}
+.month button:disabled{opacity:.35}
+.month h2{font-weight:500;font-size:17px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 0 6px}
+.kpis div{display:flex;flex-direction:column}
+.kpis small{color:var(--ink-2);font-size:13px}
+.kpis b{font-weight:500;font-size:19px}
+.note{color:var(--ink-2);font-size:14px;padding:4px 0 12px}
+.cat{padding:10px 0}
+.cat + .cat{border-top:1px solid var(--line)}
+.cat .t{display:flex;justify-content:space-between;gap:10px}
+.cat .t span:last-child{color:var(--ink-2)}
+.bar{height:6px;border-radius:3px;background:var(--line);margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--ink)}
+.trend{padding-top:6px;padding-bottom:8px}
+.trend h3,.sheet h3{font-weight:500;font-size:15px;padding:12px 0 4px}
+.trend svg{width:100%;height:150px;display:block}
+.trend text{fill:var(--ink-3);font-size:11px;font-family:inherit}
+.keys{display:flex;gap:14px;color:var(--ink-2);font-size:13px;padding:2px 0 12px}
+.keys span{display:flex;align-items:center;gap:6px}
+
+/* ops */
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips button{padding:7px 12px;border-radius:999px;background:var(--sheet);color:var(--ink-2);font-size:14px;white-space:nowrap}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.day{color:var(--ink-2);font-size:13px;padding:14px 0 2px}
+
+.empty{padding:28px 4px;color:var(--ink-2);text-align:center}
+.alert{background:color-mix(in srgb,var(--out) 12%,var(--sheet));color:var(--ink);border-radius:14px;padding:12px 14px;margin:4px 0 12px;font-size:14px}
+.gate{min-height:80vh;display:flex;flex-direction:column;justify-content:center;gap:12px;text-align:left}
+.gate h1{font-weight:400;font-size:28px}
+.gate p{color:var(--ink-2)}
+.gate button{align-self:flex-start;padding:10px 16px;border-radius:12px;background:var(--ink);color:var(--bg);font-weight:500}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"><div class="empty">Загружаю…</div></main>
+
+<script>
+const API = "https://cohqvftovjqufdxpedpo.supabase.co/functions/v1/api";
+const tg = window.Telegram && window.Telegram.WebApp;
+const GROUPS = [
+  {name:"Крипта", v:"--crypto"}, {name:"Гривна", v:"--uah"}, {name:"Наличка", v:"--cash"},
+  {name:"Электронные кошельки", v:"--ewallet"}, {name:"Банки", v:"--bank"}
+];
+const CRYPTO = ["USDT","BTC","ETH","SOL","TRX"];
+const MONTHS = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+const MSHORT = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nf = (n, d = 0) => new Intl.NumberFormat("ru-RU", {maximumFractionDigits:d, minimumFractionDigits:0}).format(n);
+const dec = a => CRYPTO.includes(a) && a !== "USDT" ? 6 : 2;
+const eur = n => nf(Math.round(n)) + " €";
+const ym = d => d.slice(0, 7);
+const state = {data:null, tab:"accounts", month:null, filter:"all"};
+
+function theme(){
+  const dark = tg && tg.colorScheme ? tg.colorScheme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  if (tg && tg.setHeaderColor) try { tg.setHeaderColor(getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()); tg.setBackgroundColor(getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()); } catch(e){}
+}
+const color = g => "var(" + (GROUPS.find(x => x.name === g) || GROUPS[4]).v + ")";
+const haptic = () => { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch(e){} };
+
+async function load(){
+  const q = new URLSearchParams(location.search);
+  if (q.has("demo")) { state.data = demo(); return render(); }
+  if (!tg || !tg.initData) { return gate(); }
+  try {
+    const r = await fetch(API, {headers:{"x-init-data": tg.initData}});
+    if (r.status === 403) return gate("Нет доступа. Дашборд открывается только у владельца бота.");
+    if (!r.ok) throw new Error("Сервер ответил " + r.status);
+    state.data = await r.json();
+    render();
+  } catch (e) {
+    $("#app").innerHTML = '<div class="gate"><h1>Данные не загрузились</h1><p>' + esc(e.message) + '. Проверь интернет и попробуй ещё раз.</p><button onclick="load()">Обновить</button></div>';
+  }
+}
+function gate(msg){
+  $("#app").innerHTML = '<div class="gate"><h1>Финансы</h1><p>' + esc(msg || "Открой дашборд из бота: кнопка «Дашборд» в меню чата.") + '</p><button onclick="location.search=\'?demo=1\'">Посмотреть на примере</button></div>';
+}
+
+function render(){
+  const d = state.data;
+  const months = [...new Set(d.ops.map(o => ym(o.d)))].sort();
+  const cur = new Date().toISOString().slice(0,7);
+  if (!months.includes(cur)) months.push(cur);
+  state.months = months;
+  if (!state.month) state.month = cur;
+  const total = d.holdings.reduce((s,h) => s + h.eur, 0);
+  const usd = d.rates.USD ? total / d.rates.USD : null;
+  const groups = GROUPS.map(g => ({...g, eur: d.holdings.filter(h => h.group === g.name).reduce((s,h)=>s+h.eur,0)})).filter(g => g.eur > 0.5);
+  const synced = d.last_sync ? new Date(d.last_sync).toLocaleString("ru-RU",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "ещё не было";
+
+  $("#app").innerHTML = `
+    <div class="top"><span>Синхронизация: ${esc(synced)}</span><button onclick="refresh()" aria-label="Обновить данные">Обновить</button></div>
+    <section class="hero" aria-label="Общий баланс">
+      <div class="total">${nf(Math.round(total))}<span class="cur">€</span></div>
+      <div class="sub">${usd ? "≈ " + nf(Math.round(usd)) + " $, " : ""}${new Set(d.holdings.map(h=>h.account)).size} счетов</div>
+      <div class="ribbon" role="img" aria-label="Распределение денег по группам">
+        ${groups.map((g,i) => `<span style="flex:${g.eur};background:${color(g.name)};animation-delay:${i*90}ms"></span>`).join("")}
+      </div>
+      <div class="legend">
+        ${groups.map(g => `<div><small><i class="dot" style="background:${color(g.name)}"></i>${g.name}</small><b>${eur(g.eur)} <span style="color:var(--ink-3);font-weight:400">${total ? (g.eur/total < .01 ? "<1" : Math.round(g.eur/total*100)) : 0}%</span></b></div>`).join("")}
+      </div>
+    </section>
+    ${(d.alerts||[]).slice(0,2).map(a => `<div class="alert" role="status">${esc(a.message)}</div>`).join("")}
+    <nav class="tabs"><div class="seg" role="tablist">
+      ${[["accounts","Счета"],["spend","Траты"],["ops","Операции"]].map(([k,t]) => `<button role="tab" aria-selected="${state.tab===k}" onclick="tab('${k}')">${t}</button>`).join("")}
+    </div></nav>
+    <section id="pane"></section>`;
+  pane();
+}
+function tab(k){ state.tab = k; haptic(); document.querySelectorAll(".seg button").forEach((b,i) => b.setAttribute("aria-selected", ["accounts","spend","ops"][i] === k)); pane(); }
+function pane(){ $("#pane").innerHTML = state.tab === "accounts" ? accounts() : state.tab === "spend" ? spend() : ops(); }
+
+function accounts(){
+  const d = state.data;
+  if (!d.holdings.length) return '<div class="sheet empty">Пока нет балансов. Запусти /sync в боте или задай баланс командой /setbalance.</div>';
+  return GROUPS.map(g => {
+    const hs = d.holdings.filter(h => h.group === g.name).sort((a,b) => b.eur - a.eur);
+    if (!hs.length) return "";
+    const sum = hs.reduce((s,h)=>s+h.eur,0);
+    return `<div class="sheet">
+      <div class="ghead"><span><i class="dot" style="background:${color(g.name)}"></i>${g.name}</span><span>${eur(sum)}</span></div>
+      ${hs.map(h => `<div class="row"><div class="l"><div>${esc(h.account)}</div><div class="meta">${esc(h.asset)}</div></div>
+        <div class="r"><div>${nf(h.amount, dec(h.asset))} ${esc(h.asset)}</div><div class="meta">${h.asset==="EUR" ? "" : "≈ " + eur(h.eur)}</div></div></div>`).join("")}
+    </div>`;
+  }).join("");
+}
+
+const isSpend = o => o.kind === "expense" || o.kind === "fee";
+function spend(){
+  const d = state.data, m = state.month, i = state.months.indexOf(m);
+  const mo = d.ops.filter(o => ym(o.d) === m);
+  const out = mo.filter(isSpend).reduce((s,o)=>s - o.eur, 0);
+  const inc = mo.filter(o => o.kind === "income").reduce((s,o)=>s + o.eur, 0);
+  const by = {};
+  mo.filter(isSpend).forEach(o => { const k = o.cat || "Без категории"; by[k] = (by[k]||0) - o.eur; });
+  const cats = Object.entries(by).sort((a,b) => b[1]-a[1]);
+  const max = cats.length ? cats[0][1] : 1;
+  const [y, mm] = m.split("-").map(Number);
+  const prev = state.months[i-1] ? d.ops.filter(o => ym(o.d) === state.months[i-1] && isSpend(o)).reduce((s,o)=>s-o.eur,0) : null;
+  let note = "";
+  if (cats.length) note = `Больше всего ушло на «${esc(cats[0][0])}»: ${Math.round(cats[0][1]/out*100)}% трат.`;
+  if (prev) { const ch = (out - prev) / prev * 100; note += ` ${ch >= 0 ? "Это на " + Math.round(ch) + "% больше" : "Это на " + Math.round(-ch) + "% меньше"}, чем в прошлом месяце.`; }
+
+  return `
+    <div class="month">
+      <button onclick="shift(-1)" ${i<=0?"disabled":""} aria-label="Предыдущий месяц">‹</button>
+      <h2>${MONTHS[mm-1][0].toUpperCase() + MONTHS[mm-1].slice(1)} ${y}</h2>
+      <button onclick="shift(1)" ${i>=state.months.length-1?"disabled":""} aria-label="Следующий месяц">›</button>
+    </div>
+    <div class="sheet">
+      <div class="kpis">
+        <div><small>Расходы</small><b class="out">${eur(out)}</b></div>
+        <div><small>Доходы</small><b class="in">${eur(inc)}</b></div>
+        <div><small>Итог</small><b>${(inc-out>=0?"+":"−") + eur(Math.abs(inc-out))}</b></div>
+      </div>
+      ${note ? `<p class="note">${note}</p>` : ""}
+    </div>
+    <div class="sheet">
+      <h3>По категориям</h3>
+      ${cats.length ? cats.map(([k,v]) => `<div class="cat"><div class="t"><span>${esc(k)}</span><span>${eur(v)}</span></div><div class="bar"><i style="width:${Math.max(2, v/max*100)}%"></i></div></div>`).join("") : '<div class="empty">В этом месяце трат нет. Напиши боту «5€ кофе», и трата появится здесь.</div>'}
+    </div>
+    <div class="sheet trend">
+      <h3>Полгода</h3>
+      ${trend()}
+      <div class="keys"><span><i class="dot" style="background:var(--out)"></i>Расходы</span><span><i class="dot" style="background:var(--in)"></i>Доходы</span></div>
+    </div>`;
+}
+function shift(n){ const i = state.months.indexOf(state.month) + n; if (state.months[i]) { state.month = state.months[i]; haptic(); pane(); } }
+
+function trend(){
+  const d = state.data, ms = state.months.slice(-6);
+  const rows = ms.map(m => {
+    const mo = d.ops.filter(o => ym(o.d) === m);
+    return {m, out: mo.filter(isSpend).reduce((s,o)=>s-o.eur,0), inc: mo.filter(o=>o.kind==="income").reduce((s,o)=>s+o.eur,0)};
+  });
+  const W = 520, H = 150, pad = 22, max = Math.max(1, ...rows.map(r => Math.max(r.out, r.inc)));
+  const col = (W - 8) / rows.length, bw = Math.min(16, col/4);
+  const y = v => H - pad - (v / max) * (H - pad - 14);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Расходы и доходы по месяцам">
+    <line x1="0" x2="${W}" y1="${H-pad}" y2="${H-pad}" stroke="var(--line)"/>
+    ${rows.map((r,i) => { const cx = 4 + col*i + col/2; const sel = r.m === state.month;
+      return `<rect x="${cx-bw-2}" y="${y(r.out)}" width="${bw}" height="${H-pad-y(r.out)}" rx="3" fill="var(--out)" opacity="${sel?1:.55}"/>
+              <rect x="${cx+2}" y="${y(r.inc)}" width="${bw}" height="${H-pad-y(r.inc)}" rx="3" fill="var(--in)" opacity="${sel?1:.55}"/>
+              <text x="${cx}" y="${H-6}" text-anchor="middle" ${sel?'style="fill:var(--ink)"':''}>${MSHORT[Number(r.m.slice(5))-1]}</text>`; }).join("")}
+  </svg>`;
+}
+
+const KIND = {expense:"Расход", income:"Доход", transfer:"Перевод", exchange:"Обмен", fee:"Комиссия", adjustment:"Корректировка"};
+function ops(){
+  const f = state.filter;
+  const list = state.data.ops.filter(o => f === "all" ? o.kind !== "adjustment" : f === "out" ? isSpend(o) : f === "in" ? o.kind === "income" : f === "move" ? (o.kind === "transfer" || o.kind === "exchange") : o.kind === "adjustment").slice(0, 200);
+  const chips = [["all","Все"],["out","Расходы"],["in","Доходы"],["move","Обмены и переводы"],["adj","Корректировки"]]
+    .map(([k,t]) => `<button aria-pressed="${f===k}" onclick="filt('${k}')">${t}</button>`).join("");
+  if (!list.length) return `<div class="chips">${chips}</div><div class="sheet empty">Здесь пока пусто.</div>`;
+  let html = "", day = "";
+  const groups = [];
+  list.forEach(o => { const k = o.d.slice(0,10); if (k !== day) { day = k; groups.push({k, items:[]}); } groups[groups.length-1].items.push(o); });
+  html = groups.map(g => {
+    const dt = new Date(g.k + "T12:00:00");
+    const label = dt.toLocaleDateString("ru-RU", {day:"numeric", month:"long", weekday:"short"});
+    return `<div class="day">${label}</div><div class="sheet">${g.items.map(o => {
+      const title = o.who || o.note || o.cat || KIND[o.kind];
+      const meta = [o.cat || KIND[o.kind], o.acc].filter(Boolean).join(", ");
+      const cls = o.amt < 0 ? "out" : "in";
+      return `<div class="row"><div class="l"><div>${esc(title)}</div><div class="meta">${esc(meta)}</div></div>
+        <div class="r"><div class="${cls}">${o.amt<0?"−":"+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.asset!=="EUR"&&o.eur?`<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>`:""}</div></div>`;
+    }).join("")}</div>`;
+  }).join("");
+  return `<div class="chips">${chips}</div>${html}`;
+}
+function filt(k){ state.filter = k; haptic(); pane(); }
+async function refresh(){ haptic(); state.data = null; $("#app").innerHTML = '<div class="empty">Обновляю…</div>'; load(); }
+
+function demo(){
+  const now = new Date(), ops = [];
+  const cats = [["Продукты",-42,"Mercadona"],["Кафе и доставка",-6.5,"Кофейня"],["Транспорт",-12,"Metro Valencia"],["Подписки и сервисы",-9.99,"Spotify"],["Кафе и доставка",-24,"Glovo"],["Связь и интернет",-15,"Digi"]];
+  for (let m = 0; m < 6; m++) for (let i = 0; i < 14; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - m, Math.max(1, now.getDate() - i*2 - (m?0:0)), 13);
+    if (m === 0 && d > now) continue;
+    const c = cats[(i + m) % cats.length], k = 0.7 + ((i*7+m*3)%10)/12;
+    ops.push({d:d.toISOString(), acc: i%3 ? "Наличка EUR" : "Revolut", asset:"EUR", amt: +(c[1]*k).toFixed(2), eur: +(c[1]*k).toFixed(2), kind:"expense", cat:c[0], who:c[2], note:null});
+  }
+  for (let m = 0; m < 6; m++) ops.push({d:new Date(now.getFullYear(), now.getMonth()-m, 2, 10).toISOString(), acc:"Trust Wallet", asset:"USDT", amt:1500, eur:1290, kind:"income", cat:"Зарплата", who:"Зарплата", note:null});
+  ops.push({d:new Date(now.getFullYear(), now.getMonth(), 5, 18).toISOString(), acc:"Monobank UAH", asset:"UAH", amt:12000, eur:247, kind:"exchange", cat:null, who:"Bybit P2P", note:"USDT → UAH"});
+  ops.sort((a,b) => b.d.localeCompare(a.d));
+  return {
+    rates:{EUR:1, USD:0.86, USDT:0.86, UAH:0.0206},
+    holdings:[
+      {account:"Trust Wallet", kind:"wallet", asset:"USDT", amount:8500, eur:7310, group:"Крипта"},
+      {account:"TronLink #1", kind:"wallet", asset:"USDT", amount:794, eur:683, group:"Крипта"},
+      {account:"Monobank UAH", kind:"bank", asset:"UAH", amount:362.74, eur:7.47, group:"Гривна"},
+      {account:"Monobank UAH", kind:"bank", asset:"EUR", amount:10, eur:10, group:"Банки"},
+      {account:"Наличка EUR", kind:"cash", asset:"EUR", amount:840, eur:840, group:"Наличка"},
+      {account:"Revolut", kind:"ewallet", asset:"EUR", amount:312.4, eur:312.4, group:"Электронные кошельки"}
+    ],
+    ops, alerts:[], last_sync:new Date().toISOString()
+  };
+}
+
+if (tg) { tg.ready(); tg.expand(); tg.onEvent && tg.onEvent("themeChanged", () => { theme(); }); }
+theme();
+load();
+</script>
+</body>
+</html>
