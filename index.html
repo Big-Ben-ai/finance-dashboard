@@ -63,7 +63,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .ghead{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 6px;font-weight:500}
 .ghead span:first-child{display:flex;align-items:center;gap:8px}
 .ghead span:last-child{color:var(--ink-2);font-weight:400}
-.row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line);width:100%;text-align:left}
 .row:first-of-type{border-top:0}
 .row .l{min-width:0}
 .row .l div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -142,6 +142,64 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   background:color-mix(in srgb,var(--k) 14%,transparent);color:var(--k)}
 .ic.expense,.ic.fee{--k:var(--out)} .ic.income{--k:var(--in)} .ic.transfer,.ic.exchange{--k:var(--ewallet)} .ic.adjustment{--k:var(--ink-3)}
 .op .l{flex:1}
+
+/* ---- v3 ---- */
+.strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{border-radius:18px;padding:14px 14px 13px;background:var(--sheet);text-align:left;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden}
+.tile small{color:var(--ink-2);font-size:13px}
+.tile b{font-weight:500;font-size:20px}
+.tile em{font-style:normal;color:var(--ink-2);font-size:13px}
+.tile.t1{background:linear-gradient(150deg,color-mix(in srgb,var(--out) 13%,var(--sheet)),var(--sheet) 70%)}
+.tile.t2{background:linear-gradient(150deg,color-mix(in srgb,var(--cash) 14%,var(--sheet)),var(--sheet) 70%)}
+.tile.ok{background:linear-gradient(150deg,color-mix(in srgb,var(--in) 14%,var(--sheet)),var(--sheet) 70%)}
+.tile .mini{height:5px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
+.tile .mini i{display:block;height:100%;border-radius:3px}
+.alert.warn{background:color-mix(in srgb,var(--uah) 16%,var(--sheet))}
+.alert.info{background:color-mix(in srgb,var(--ewallet) 13%,var(--sheet));cursor:pointer;width:100%;text-align:left;display:block}
+.chart{padding:14px 16px 10px;margin-bottom:12px}
+.chart .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.chart .hd b{font-weight:500;font-size:22px;display:block}
+.chart .hd small{color:var(--ink-2);font-size:13px}
+.rng{display:flex;background:var(--bg);border-radius:10px;padding:3px;gap:2px}
+.rng button{padding:5px 10px;border-radius:8px;font-size:13px;color:var(--ink-2)}
+.rng button[aria-pressed="true"]{background:var(--sheet);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chart svg{width:100%;height:130px;display:block;margin-top:8px;touch-action:pan-y}
+.chart .hint{color:var(--ink-3);font-size:12.5px;padding:2px 0 4px}
+.delta{font-size:13px;font-weight:500}
+.cat{cursor:default}
+.cat .t span:first-child{display:flex;align-items:center;gap:8px;min-width:0}
+.cat .t span:last-child{white-space:nowrap}
+.cat .lim{font-size:12.5px;color:var(--ink-2);padding-top:4px;display:flex;justify-content:space-between}
+.cat .lim.over{color:var(--out)}
+.linkbtn{color:var(--ewallet);font-size:14px;padding:6px 0}
+.head2{display:flex;justify-content:space-between;align-items:center}
+.small{border-top:1px dashed var(--line);margin-top:2px}
+.small .ar{padding:8px 0 8px 12px;font-size:14px;color:var(--ink-2)}
+.op{cursor:pointer;width:100%;text-align:left}
+.badge{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--uah) 22%,transparent);color:var(--ink);margin-left:6px;vertical-align:1px}
+
+/* sheet overlay */
+.ov{position:fixed;inset:0;background:rgba(8,12,20,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s both}
+.pan{background:var(--sheet);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;animation:up .26s cubic-bezier(.2,.8,.2,1) both}
+.pan .grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.pan h2{font-weight:500;font-size:19px}
+.pan .sub2{color:var(--ink-2);font-size:14px;margin:2px 0 14px}
+.opts{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.opts button{padding:9px 14px;border-radius:12px;background:var(--bg);color:var(--ink);font-size:14.5px}
+.opts button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lbl{color:var(--ink-2);font-size:13px;margin:4px 0 6px}
+.pan select,.pan input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.save{width:100%;margin-top:16px;padding:13px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:500}
+.save:disabled{opacity:.5}
+.lim-row{display:flex;align-items:center;gap:10px;padding:7px 0}
+.lim-row span{flex:1}
+.lim-row input{width:110px;text-align:right}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.ov,.pan{animation:none}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:30}
+.grp{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,var(--sheet)),var(--sheet) 90px)}
+
 [hidden]{display:none!important}
 </style>
 </head>
@@ -192,11 +250,29 @@ function gate(msg){
   $("#app").innerHTML = '<div class="gate"><h1>Финансы</h1><p>' + esc(msg || "Открой дашборд из бота: кнопка «Дашборд» в меню чата.") + '</p><button onclick="location.search=\'?demo=1\'">Посмотреть на примере</button></div>';
 }
 
+const flowCats = f => (state.data.cats || []).filter(c => c.flow === f);
+const thisMonth = () => new Date().toISOString().slice(0,7);
+function spentByCat(m){
+  const by = {};
+  state.data.ops.filter(o => ym(o.d) === m && isSpend(o)).forEach(o => { const k = o.catId || "_"; by[k] = (by[k]||0) - o.eur; });
+  return by;
+}
+function budgetState(){
+  const d = state.data, lim = {}; (d.budgets || []).forEach(b => lim[b.category_id] = Number(b.monthly_eur));
+  const by = spentByCat(thisMonth()), over = [], near = [];
+  Object.entries(lim).forEach(([id, l]) => {
+    const sp = by[id] || 0, nm = ((d.cats||[]).find(c => c.id === id)||{}).name || "Категория";
+    if (sp > l) over.push({nm, pc: Math.round(sp/l*100)}); else if (sp > l*.8) near.push({nm, pc: Math.round(sp/l*100)});
+  });
+  return {lim, by, over, near, count: Object.keys(lim).length};
+}
+const toReview = () => state.data.ops.filter(o => o.status === "needs_review" && o.kind !== "adjustment");
+
 function render(){
   const d = state.data;
   d.holdings.forEach(h => { h.group = grp(h); });
   const months = [...new Set(d.ops.map(o => ym(o.d)))].sort();
-  const cur = new Date().toISOString().slice(0,7);
+  const cur = thisMonth();
   if (!months.includes(cur)) months.push(cur);
   state.months = months;
   if (!state.month) state.month = cur;
@@ -204,13 +280,27 @@ function render(){
   const usd = d.rates.USD ? total / d.rates.USD : null;
   const groups = GROUPS.map(g => ({...g, eur: d.holdings.filter(h => h.group === g.name).reduce((s,h)=>s+h.eur,0)})).filter(g => g.eur > 0.5);
   const synced = d.last_sync ? new Date(d.last_sync).toLocaleString("ru-RU",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "ещё не было";
+  const bs = budgetState(), rv = toReview();
+  if (state.filter === "review" && !rv.length) state.filter = "all";
+  const mo = d.ops.filter(o => ym(o.d) === cur), spent = mo.filter(isSpend).reduce((s,o)=>s-o.eur,0);
+  const day = new Date().getDate();
+  const warn = [
+    ...bs.over.map(x => `<div class="alert" role="status">Лимит превышен: «${esc(x.nm)}», ${x.pc}%</div>`),
+    ...bs.near.map(x => `<div class="alert warn" role="status">Лимит почти исчерпан: «${esc(x.nm)}», ${x.pc}%</div>`),
+    ...(d.alerts||[]).slice(0,2).map(a => `<div class="alert" role="status">${esc(a.message)}</div>`),
+    rv.length ? `<button class="alert info" onclick="reviewNow()">Нужно разобрать операций: ${rv.length}. Нажми, чтобы указать тип.</button>` : ""
+  ].join("");
+  const budgetTile = bs.count
+    ? (bs.over.length ? `<button class="tile t1" onclick="openLimits()"><small>Лимиты</small><b>${bs.over.length} превышено</b><em>из ${bs.count}</em></button>`
+       : `<button class="tile ok" onclick="openLimits()"><small>Лимиты</small><b>В норме</b><em>${bs.count} ${plural(bs.count,"категория","категории","категорий")}${bs.near.length ? ", " + bs.near.length + " на грани" : ""}</em></button>`)
+    : `<button class="tile t2" onclick="openLimits()"><small>Лимиты</small><b>Задать</b><em>на траты по категориям</em></button>`;
 
   $("#app").innerHTML = `
     <div class="top"><span>Синхронизация: ${esc(synced)}</span><button onclick="refresh()" aria-label="Обновить данные">Обновить</button></div>
     <section class="hero" aria-label="Общий баланс">
       <div class="cap">Всего денег</div>
       <div class="total">${nf(Math.round(total))}<span class="cur">€</span></div>
-      <div class="sub">${usd ? "≈ " + nf(Math.round(usd)) + " $, " : ""}${new Set(d.holdings.map(h=>h.account)).size} счетов</div>
+      <div class="sub">${usd ? "≈ " + nf(Math.round(usd)) + " $, " : ""}${new Set(d.holdings.map(h=>h.account)).size} ${plural(new Set(d.holdings.map(h=>h.account)).size,"счёт","счёта","счетов")}</div>
       <div class="ribbon" role="img" aria-label="Распределение денег по группам">
         ${groups.map((g,i) => `<span style="flex:${g.eur};background:${color(g.name)};animation-delay:${i*90}ms"></span>`).join("")}
       </div>
@@ -218,15 +308,145 @@ function render(){
         ${groups.map(g => `<div><small><i class="dot" style="background:${color(g.name)}"></i>${g.name === "Электронные кошельки" ? "Кошельки" : g.name}</small><b>${eur(g.eur)} <span style="color:var(--ink-3);font-weight:400">${total ? (g.eur/total < .01 ? "<1" : Math.round(g.eur/total*100)) : 0}%</span></b></div>`).join("")}
       </div>
     </section>
-    ${(d.alerts||[]).slice(0,2).map(a => `<div class="alert" role="status">${esc(a.message)}</div>`).join("")}
+    <div class="strip">
+      <button class="tile t1" onclick="tab('spend')"><small>Траты в ${MONTHS[new Date().getMonth()]}</small><b>${eur(spent)}</b><em>${spent ? "≈ " + eur(spent/day) + " в день" : "пока ничего"}</em></button>
+      ${budgetTile}
+    </div>
+    ${warn}
     <nav class="tabs"><div class="seg" role="tablist">
       ${[["accounts","Счета"],["spend","Траты"],["ops","Операции"]].map(([k,t]) => `<button role="tab" aria-selected="${state.tab===k}" onclick="tab('${k}')">${t}</button>`).join("")}
     </div></nav>
     <section id="pane"></section>`;
   pane();
 }
-function tab(k){ state.tab = k; haptic(); document.querySelectorAll(".seg button").forEach((b,i) => b.setAttribute("aria-selected", ["accounts","spend","ops"][i] === k)); pane(); }
-function pane(){ $("#pane").innerHTML = state.tab === "accounts" ? accounts() : state.tab === "spend" ? spend() : ops(); }
+function tab(k){ state.tab = k; haptic(); document.querySelectorAll(".seg button").forEach((b,i) => b.setAttribute("aria-selected", ["accounts","spend","ops"][i] === k)); pane(); const t = document.querySelector(".tabs"); if (t && scrollY > t.offsetTop) scrollTo({top:t.offsetTop - 4}); }
+function pane(){ $("#pane").innerHTML = state.tab === "accounts" ? chartCard() + accounts() : state.tab === "spend" ? spend() : ops(); bindChart(); }
+function reviewNow(){ state.filter = "review"; tab("ops"); }
+
+/* ---------- net worth chart ---------- */
+function chartCard(){
+  const h = (state.data.history || []).map(p => ({t: new Date(p.ts).getTime(), v: Number(p.total_eur)}));
+  const rng = state.range || "month";
+  const span = rng === "week" ? 7 : rng === "month" ? 30 : 3650;
+  const from = Date.now() - span * 864e5;
+  let pts = h.filter(p => p.t >= from);
+  if (pts.length > 120) { const k = Math.ceil(pts.length/120); pts = pts.filter((_,i) => i % k === 0 || i === pts.length-1); }
+  const btn = (k,t) => `<button aria-pressed="${rng===k}" onclick="setRange('${k}')">${t}</button>`;
+  const head = pts.length ? pts[pts.length-1].v : 0;
+  const diff = pts.length > 1 ? head - pts[0].v : 0, pc = pts.length > 1 && pts[0].v ? diff / pts[0].v * 100 : 0;
+  state.pts = pts;
+  const since = h.length ? new Date(h[0].t).toLocaleDateString("ru-RU",{day:"numeric",month:"long"}) : "";
+  return `<div class="sheet chart">
+    <div class="hd"><div><small>Капитал</small><b id="cv">${eur(head)}</b><span class="delta ${diff>=0?"in":"out"}" id="cd">${pts.length>1 ? (diff>=0?"+":"−") + eur(Math.abs(diff)) + " (" + (diff>=0?"+":"−") + Math.abs(pc).toFixed(1) + "%)" : ""}</span></div>
+      <div class="rng">${btn("week","Неделя")}${btn("month","Месяц")}${btn("all","Всё")}</div></div>
+    ${pts.length > 1 ? chartSvg(pts) : '<div class="empty" style="padding:22px 0 10px">Точки появятся после нескольких обновлений. График собирается каждые 3 часа.</div>'}
+    ${since ? `<div class="hint">История ведётся с ${since}. Старее данных нет.</div>` : ""}
+  </div>`;
+}
+function setRange(k){ state.range = k; haptic(); pane(); }
+function chartSvg(pts){
+  const W = 520, H = 130, pt = 10, pb = 18;
+  const t0 = pts[0].t, t1 = pts[pts.length-1].t || t0 + 1;
+  let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
+  if (hi - lo < hi * .004) { lo -= hi * .01; hi += hi * .01; }
+  const x = t => (t - t0) / ((t1 - t0) || 1) * W, y = v => H - pb - (v - lo) / (hi - lo) * (H - pb - pt);
+  const line = pts.map((p,i) => (i ? "L" : "M") + x(p.t).toFixed(1) + " " + y(p.v).toFixed(1)).join(" ");
+  const area = line + " L" + W + " " + (H-pb) + " L0 " + (H-pb) + " Z";
+  const fmt = t => new Date(t).toLocaleDateString("ru-RU",{day:"numeric",month:"short"});
+  return `<svg id="csvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Капитал по времени">
+    <defs><linearGradient id="gA" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--ewallet)" stop-opacity=".35"/><stop offset="1" stop-color="var(--ewallet)" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#gA)"/><path d="${line}" fill="none" stroke="var(--ewallet)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <line id="cl" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="var(--ink-3)" stroke-dasharray="3 3" style="display:none"/>
+    <circle id="cc" r="4.5" fill="var(--sheet)" stroke="var(--ewallet)" stroke-width="2" cx="${x(t1)}" cy="${y(pts[pts.length-1].v)}" vector-effect="non-scaling-stroke"/>
+    <text x="0" y="${H-3}" style="fill:var(--ink-3);font-size:11px">${fmt(t0)}</text>
+    <text x="${W}" y="${H-3}" text-anchor="end" style="fill:var(--ink-3);font-size:11px">${fmt(t1)}</text>
+  </svg>`;
+}
+function bindChart(){
+  const svg = $("#csvg"); if (!svg || !state.pts) return;
+  const pts = state.pts, W = 520, H = 130, pt = 10, pb = 18;
+  const t0 = pts[0].t, t1 = pts[pts.length-1].t;
+  let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
+  if (hi - lo < hi * .004) { lo -= hi * .01; hi += hi * .01; }
+  const y = v => H - pb - (v - lo) / (hi - lo) * (H - pb - pt);
+  const move = e => {
+    const r = svg.getBoundingClientRect(), fx = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), t = t0 + fx * (t1 - t0);
+    let best = pts[0]; pts.forEach(p => { if (Math.abs(p.t - t) < Math.abs(best.t - t)) best = p; });
+    const cx = (best.t - t0) / ((t1 - t0) || 1) * W;
+    $("#cl").style.display = ""; $("#cl").setAttribute("x1", cx); $("#cl").setAttribute("x2", cx);
+    $("#cc").setAttribute("cx", cx); $("#cc").setAttribute("cy", y(best.v));
+    $("#cv").textContent = eur(best.v);
+    $("#cd").textContent = new Date(best.t).toLocaleString("ru-RU",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+    $("#cd").className = "delta"; $("#cd").style.color = "var(--ink-2)";
+  };
+  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move);
+  svg.addEventListener("pointerleave", () => pane());
+}
+
+/* ---------- sheets / api ---------- */
+function openSheet(html){
+  closeSheet();
+  const el = document.createElement("div"); el.className = "ov"; el.id = "ov";
+  el.innerHTML = '<div class="pan" role="dialog" aria-modal="true"><div class="grab"></div>' + html + '</div>';
+  el.addEventListener("click", e => { if (e.target === el) closeSheet(); });
+  document.body.appendChild(el); document.body.style.overflow = "hidden";
+}
+function closeSheet(){ const el = $("#ov"); if (el) el.remove(); document.body.style.overflow = ""; }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+function toast(t){ const el = document.createElement("div"); el.className = "toast"; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2200); }
+async function post(body){
+  if (new URLSearchParams(location.search).has("demo")) return {ok:true};
+  const r = await fetch(API, {method:"POST", headers:{"x-init-data": tg.initData, "content-type":"application/json"}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({})); if (!r.ok || !j.ok) throw new Error(j.error || ("Ошибка " + r.status)); return j;
+}
+
+let edit = null;
+function openOp(i){
+  const o = state.vis[i]; if (!o || o.kind === "adjustment") return;
+  const pos = o.amt > 0;
+  edit = {id:o.id, kind:o.kind, catId:o.catId || "", pos};
+  const kinds = [[pos ? "income" : "expense", pos ? "Доход" : "Расход"], ["exchange","Обмен"], ["transfer","Перевод"]];
+  const title = o.who || o.note || o.cat || KIND[o.kind];
+  openSheet(`<h2>${esc(title)}</h2><div class="sub2">${o.amt<0?"−":"+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}${o.eur && o.asset!=="EUR" ? ", ≈ " + eur(Math.abs(o.eur)) : ""} · ${esc(o.acc)}</div>
+    <div class="lbl">Что это за операция</div>
+    <div class="opts" id="kopts">${kinds.map(([k,t]) => `<button aria-pressed="${edit.kind===k}" onclick="pickKind('${k}')">${t}</button>`).join("")}</div>
+    <div id="catbox"></div>
+    <button class="save" id="sv" onclick="saveOp()">Сохранить</button>`);
+  catBox();
+}
+function pickKind(k){ edit.kind = k; document.querySelectorAll("#kopts button").forEach(b => b.setAttribute("aria-pressed", b.textContent === ({income:"Доход",expense:"Расход",exchange:"Обмен",transfer:"Перевод"})[k])); catBox(); }
+function catBox(){
+  const f = edit.kind === "expense" ? "expense" : edit.kind === "income" ? "income" : null;
+  $("#catbox").innerHTML = f ? `<div class="lbl">Категория</div><select id="catsel" onchange="edit.catId=this.value"><option value="">Без категории</option>${flowCats(f).map(c => `<option value="${c.id}" ${c.id===edit.catId?"selected":""}>${esc(c.name)}</option>`).join("")}</select>` : "";
+}
+async function saveOp(){
+  const b = $("#sv"); b.disabled = true; b.textContent = "Сохраняю…";
+  try {
+    await post({action:"set_kind", id:edit.id, kind:edit.kind});
+    if (edit.kind === "expense" || edit.kind === "income") await post({action:"set_category", id:edit.id, category_id: edit.catId || null});
+    const o = state.data.ops.find(x => x.id === edit.id);
+    if (o) { o.kind = edit.kind; o.status = "confirmed"; o.catId = (edit.kind === "expense" || edit.kind === "income") ? (edit.catId || null) : null; o.cat = o.catId ? ((state.data.cats.find(c => c.id === o.catId)||{}).name || null) : null; }
+    closeSheet(); toast("Сохранено"); render();
+  } catch (e) { b.disabled = false; b.textContent = "Сохранить"; toast(e.message); }
+}
+function openLimits(){
+  const bs = budgetState(), cats = flowCats("expense");
+  openSheet(`<h2>Лимиты на месяц</h2><div class="sub2">Сумма в евро. Оставь пустым, если лимит не нужен. На главной появится предупреждение, когда траты подойдут к лимиту.</div>
+    ${cats.map(c => `<div class="lim-row"><span>${esc(c.name)}</span><input inputmode="decimal" placeholder="—" data-c="${c.id}" value="${bs.lim[c.id] || ""}" aria-label="Лимит: ${esc(c.name)}"></div>`).join("")}
+    <button class="save" id="sv" onclick="saveLimits()">Сохранить</button>`);
+}
+async function saveLimits(){
+  const b = $("#sv"); b.disabled = true; b.textContent = "Сохраняю…";
+  const old = {}; (state.data.budgets||[]).forEach(x => old[x.category_id] = Number(x.monthly_eur));
+  try {
+    for (const inp of document.querySelectorAll("#ov input[data-c]")) {
+      const id = inp.dataset.c, v = parseFloat(String(inp.value).replace(",", ".")) || 0;
+      if ((old[id] || 0) !== v) await post({action:"set_budget", category_id:id, monthly_eur:v});
+      if ((old[id] || 0) !== v) { state.data.budgets = (state.data.budgets||[]).filter(x => x.category_id !== id); if (v > 0) state.data.budgets.push({category_id:id, monthly_eur:v}); }
+    }
+    closeSheet(); toast("Лимиты сохранены"); render();
+  } catch (e) { b.disabled = false; b.textContent = "Сохранить"; toast(e.message); }
+}
 
 const ICON = {
   "Крипта":'<svg viewBox="0 0 24 24"><path d="M12 3l7.5 4.3v9.4L12 21l-7.5-4.3V7.3z"/><path d="M9.5 9.5h3.2a1.6 1.6 0 010 3.2H9.5m0 0h3.6a1.6 1.6 0 010 3.2H9.5M9.5 8v8"/></svg>',
@@ -288,6 +508,8 @@ function accRow(gname, a){
     return `<div class="acc"><div class="ar"><div class="l"><div>${esc(a.name)}</div><div class="meta">${nf(h.amount, dec(h.asset))} ${esc(h.asset)}</div></div><div class="r">${eur(h.eur)}</div></div></div>`;
   }
   const open = !!ui.open[key];
+  const big = a.items.filter(h => h.eur >= 5 || h.asset === "EUR"), small = a.items.filter(h => !(h.eur >= 5 || h.asset === "EUR"));
+  const aiRow = h => `<div class="ai${!h.eur && h.asset !== "EUR" ? " np" : ""}"><div><div>${esc(h.asset)}</div><div class="meta">${nf(h.amount, dec(h.asset))}</div></div><div class="r"><div>${h.eur ? eur(h.eur) : "—"}</div>${!h.eur && h.asset !== "EUR" ? '<div class="meta">без цены</div>' : ""}</div></div>`;
   const names = a.items.slice(0,3).map(h => h.asset).join(", ");
   const rest = a.items.length - 3;
   return `<div class="acc" data-open="${open}">
@@ -296,7 +518,9 @@ function accRow(gname, a){
       <div class="r">${eur(a.eur)}${CHEV}</div>
     </button>
     <div class="abody"><div class="ainner"><div class="aitems">
-      ${a.items.map(h => `<div class="ai${!h.eur && h.asset !== "EUR" ? " np" : ""}"><div><div>${esc(h.asset)}</div><div class="meta">${nf(h.amount, dec(h.asset))}</div></div><div class="r"><div>${h.eur ? eur(h.eur) : "—"}</div>${!h.eur && h.asset !== "EUR" ? '<div class="meta">без цены</div>' : ""}</div></div>`).join("")}
+      ${big.map(aiRow).join("")}
+      ${small.length ? `<div class="small" data-open="${!!ui.open[key + "|s"]}"><button class="ar" data-a="${esc(key + "|s")}" aria-expanded="${!!ui.open[key + "|s"]}"><div class="l">Мелочь: ${small.length} ${plural(small.length,"позиция","позиции","позиций")}</div><div class="r">${eur(small.reduce((s,h)=>s+h.eur,0))}${CHEV}</div></button>
+        <div class="abody"><div class="ainner">${small.map(aiRow).join("")}</div></div></div>` : ""}
     </div></div></div>
   </div>`;
 }
@@ -308,14 +532,15 @@ function spend(){
   const mo = d.ops.filter(o => ym(o.d) === m);
   const out = mo.filter(isSpend).reduce((s,o)=>s - o.eur, 0);
   const inc = mo.filter(o => o.kind === "income").reduce((s,o)=>s + o.eur, 0);
-  const by = {};
-  mo.filter(isSpend).forEach(o => { const k = o.cat || "Без категории"; by[k] = (by[k]||0) - o.eur; });
-  const cats = Object.entries(by).sort((a,b) => b[1]-a[1]);
-  const max = cats.length ? cats[0][1] : 1;
+  const by = {}, lim = {}; (d.budgets || []).forEach(b => lim[b.category_id] = Number(b.monthly_eur));
+  mo.filter(isSpend).forEach(o => { const k = o.catId || "_"; by[k] = by[k] || {id:o.catId, nm:o.cat || "Без категории", v:0}; by[k].v -= o.eur; });
+  Object.keys(lim).forEach(id => { if (!by[id]) by[id] = {id, nm:((d.cats||[]).find(c => c.id === id)||{}).name || "Категория", v:0}; });
+  const cats = Object.values(by).sort((a,b) => b.v - a.v).map(c => [c.nm, c.v, c.id, lim[c.id]]);
+  const max = cats.length ? Math.max(cats[0][1], 1) : 1;
   const [y, mm] = m.split("-").map(Number);
   const prev = state.months[i-1] ? d.ops.filter(o => ym(o.d) === state.months[i-1] && isSpend(o)).reduce((s,o)=>s-o.eur,0) : null;
   let note = "";
-  if (cats.length) note = `Больше всего ушло на «${esc(cats[0][0])}»: ${Math.round(cats[0][1]/out*100)}% трат.`;
+  if (cats.length && out > 0) note = `Больше всего ушло на «${esc(cats[0][0])}»: ${Math.round(cats[0][1]/out*100)}% трат.`;
   if (prev) { const ch = (out - prev) / prev * 100; note += ` ${ch >= 0 ? "Это на " + Math.round(ch) + "% больше" : "Это на " + Math.round(-ch) + "% меньше"}, чем в прошлом месяце.`; }
 
   return `
@@ -333,8 +558,13 @@ function spend(){
       ${note ? `<p class="note">${note}</p>` : ""}
     </div>
     <div class="sheet">
-      <h3>По категориям</h3>
-      ${cats.length ? cats.map(([k,v],i) => `<div class="cat"><div class="t"><span>${esc(k)}</span><span>${eur(v)}</span></div><div class="bar"><i style="width:${Math.max(2, v/max*100)}%;background:${CATC[i % CATC.length]}"></i></div></div>`).join("") : '<div class="empty">В этом месяце трат нет. Напиши боту «5€ кофе», и трата появится здесь.</div>'}
+      <div class="head2"><h3>По категориям</h3><button class="linkbtn" onclick="openLimits()">Лимиты</button></div>
+      ${cats.length ? cats.map(([k,v,id,l],i) => {
+        const base = CATC[i % CATC.length];
+        const pcL = l ? v / l : 0, c = !l ? base : pcL > 1 ? "var(--out)" : pcL > .8 ? "var(--uah)" : base;
+        const w = l ? Math.min(100, Math.max(2, pcL * 100)) : Math.max(2, v / max * 100);
+        const lt = l ? `<div class="lim ${pcL > 1 ? "over" : ""}"><span>Лимит ${eur(l)}</span><span>${pcL > 1 ? "превышен на " + eur(v - l) : "осталось " + eur(l - v)}</span></div>` : "";
+        return `<div class="cat"><div class="t"><span><i class="dot" style="background:${base}"></i>${esc(k)}</span><span>${eur(v)}</span></div><div class="bar"><i style="width:${w}%;background:${c}"></i></div>${lt}</div>`; }).join("") : '<div class="empty">В этом месяце трат нет. Напиши боту «5€ кофе», и трата появится здесь.</div>'}
     </div>
     <div class="sheet trend">
       <h3>Полгода</h3>
@@ -365,8 +595,10 @@ function trend(){
 const KIND = {expense:"Расход", income:"Доход", transfer:"Перевод", exchange:"Обмен", fee:"Комиссия", adjustment:"Корректировка"};
 function ops(){
   const f = state.filter;
-  const list = state.data.ops.filter(o => f === "all" ? o.kind !== "adjustment" : f === "out" ? isSpend(o) : f === "in" ? o.kind === "income" : f === "move" ? (o.kind === "transfer" || o.kind === "exchange") : o.kind === "adjustment").slice(0, 200);
-  const chips = [["all","Все"],["out","Расходы"],["in","Доходы"],["move","Обмены и переводы"],["adj","Корректировки"]]
+  const list = state.data.ops.filter(o => f === "all" ? o.kind !== "adjustment" : f === "review" ? (o.status === "needs_review" && o.kind !== "adjustment") : f === "out" ? isSpend(o) : f === "in" ? o.kind === "income" : f === "move" ? (o.kind === "transfer" || o.kind === "exchange") : o.kind === "adjustment").slice(0, 200);
+  state.vis = list;
+  const nr = toReview().length;
+  const chips = [["all","Все"], ...(nr ? [["review","Разобрать (" + nr + ")"]] : []), ["out","Расходы"],["in","Доходы"],["move","Обмены и переводы"],["adj","Корректировки"]]
     .map(([k,t]) => `<button aria-pressed="${f===k}" onclick="filt('${k}')">${t}</button>`).join("");
   if (!list.length) return `<div class="chips">${chips}</div><div class="sheet empty">Здесь пока пусто.</div>`;
   let html = "", day = "";
@@ -376,12 +608,13 @@ function ops(){
     const dt = new Date(g.k + "T12:00:00");
     const label = dt.toLocaleDateString("ru-RU", {day:"numeric", month:"long", weekday:"short"});
     return `<div class="day">${label}</div><div class="sheet">${g.items.map(o => {
+      const idx = list.indexOf(o);
       const title = o.who || o.note || o.cat || KIND[o.kind];
       const meta = [o.cat || KIND[o.kind], o.acc].filter(Boolean).join(", ");
       const cls = o.amt < 0 ? "out" : "in";
       const glyph = {expense:"↑", fee:"↑", income:"↓", transfer:"⇄", exchange:"⇄", adjustment:"≈"}[o.kind] || "·";
-      return `<div class="row op"><span class="ic ${o.kind}">${glyph}</span><div class="l"><div>${esc(title)}</div><div class="meta">${esc(meta)}</div></div>
-        <div class="r"><div class="${cls}">${o.amt<0?"−":"+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.asset!=="EUR"&&o.eur?`<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>`:""}</div></div>`;
+      return `<${o.kind === "adjustment" ? "div" : "button"} class="row op" ${o.kind === "adjustment" ? "" : `onclick="openOp(${idx})" aria-label="Изменить: ${esc(title)}"`}><span class="ic ${o.kind}">${glyph}</span><div class="l"><div>${esc(title)}${o.status === "needs_review" && o.kind !== "adjustment" ? '<span class="badge">разобрать</span>' : ""}</div><div class="meta">${esc(meta)}</div></div>
+        <div class="r"><div class="${cls}">${o.amt<0?"−":"+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.asset!=="EUR"&&o.eur?`<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>`:""}</div></${o.kind === "adjustment" ? "div" : "button"}>`;
     }).join("")}</div>`;
   }).join("");
   return `<div class="chips">${chips}</div>${html}`;
@@ -401,7 +634,13 @@ function demo(){
   for (let m = 0; m < 6; m++) ops.push({d:new Date(now.getFullYear(), now.getMonth()-m, 2, 10).toISOString(), acc:"Trust Wallet", asset:"USDT", amt:1500, eur:1290, kind:"income", cat:"Зарплата", who:"Зарплата", note:null});
   ops.push({d:new Date(now.getFullYear(), now.getMonth(), 5, 18).toISOString(), acc:"Monobank UAH", asset:"UAH", amt:12000, eur:247, kind:"exchange", cat:null, who:"Bybit P2P", note:"USDT → UAH"});
   ops.sort((a,b) => b.d.localeCompare(a.d));
+  ops.forEach((o,i) => { o.id = "d" + i; o.status = "confirmed"; o.catId = o.cat ? "c-" + o.cat : null; });
+  ops.push({d:new Date().toISOString(), acc:"Monobank UAH", asset:"UAH", amt:3200, eur:66, kind:"transfer", cat:null, who:"Від: Іван Петренко", note:null, id:"dx", status:"needs_review", catId:null});
+  ops.sort((a,b) => b.d.localeCompare(a.d));
+  const cn = [["Продукты","expense"],["Кафе и доставка","expense"],["Транспорт","expense"],["Подписки и сервисы","expense"],["Связь и интернет","expense"],["Прочее","expense"],["Зарплата","income"]].map(([n,f]) => ({id:"c-"+n, name:n, flow:f}));
+  const hist = []; for (let i = 0; i < 60; i++) { const t = Date.now() - (59-i) * 3 * 36e5 * 4; hist.push({ts:new Date(t).toISOString(), total_eur: 13800 + i*18 + Math.sin(i/4)*120}); }
   return {
+    cats: cn, budgets: [{category_id:"c-Кафе и доставка", monthly_eur:40}, {category_id:"c-Продукты", monthly_eur:300}], history: hist,
     rates:{EUR:1, USD:0.86, USDT:0.86, UAH:0.0206},
     holdings:[
       {account:"Trust Wallet", kind:"wallet", asset:"USDT", amount:8500, eur:7310, group:"Крипта"},
