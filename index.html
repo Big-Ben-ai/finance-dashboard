@@ -688,9 +688,36 @@ function trend(){
 }
 
 const KIND = {expense:"Расход", income:"Доход", transfer:"Перевод", exchange:"Обмен", fee:"Комиссия", adjustment:"Корректировка"};
+function exGroups(){
+  const m = {};
+  state.data.ops.forEach(o => { if (o.gid && o.kind === "exchange") (m[o.gid] = m[o.gid] || []).push(o); });
+  Object.keys(m).forEach(k => { const g = m[k]; if (g.length < 2 || !g.some(o => o.amt < 0) || !g.some(o => o.amt > 0)) delete m[k]; });
+  return m;
+}
+function exCalc(legs){
+  const outs = legs.filter(o => o.amt < 0), ins = legs.filter(o => o.amt > 0);
+  const sent = outs.reduce((s,o) => s - o.amt, 0), recv = ins.reduce((s,o) => s + o.amt, 0);
+  const outEur = outs.reduce((s,o) => s - o.eur, 0), inEur = ins.reduce((s,o) => s + o.eur, 0);
+  return {outs, ins, sent, recv, outEur, inEur, diff: inEur - outEur, a1: outs[0].asset, a2: ins[0].asset, rate: sent ? recv / sent : 0};
+}
+function exRow(g, legs){
+  const c = exCalc(legs);
+  return `<button class="row op" onclick="openEx('${g}')" aria-label="Обмен ${esc(c.a1)} в ${esc(c.a2)}"><span class="ic exchange">⇄</span><div class="l"><div>Обмен ${esc(c.a1)} → ${esc(c.a2)}</div><div class="meta">${esc(c.outs[0].acc)} → ${esc(c.ins[0].acc)} · курс ${nf(c.rate, 2)} ${esc(c.a2)}/${esc(c.a1)}</div></div><div class="r"><div class="out">−${nf(c.sent, dec(c.a1))} ${esc(c.a1)}</div><div class="in">+${nf(c.recv, dec(c.a2))} ${esc(c.a2)}</div></div></button>`;
+}
+function openEx(g){
+  const legs = exGroups()[g]; if (!legs) return;
+  const c = exCalc(legs), when = new Date(c.ins[c.ins.length-1].d);
+  const line = (o, sign) => { const t = new Date(o.d); return `<div class="row"><div class="l"><div>${esc(o.who || o.acc)}</div><div class="meta">${t.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})}, ${t.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})} · ${esc(o.acc)}</div></div><div class="r"><div class="${sign < 0 ? "out" : "in"}">${sign < 0 ? "−" : "+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.eur ? `<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>` : ""}</div></div>`; };
+  const pos = c.diff >= 0;
+  openSheet(`<h2>Обмен ${esc(c.a1)} → ${esc(c.a2)}</h2><div class="sub2">${when.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})} · это не расход и не доход, просто перевод денег между счетами</div>
+    <div class="lbl">Отдал</div>${c.outs.map(o => line(o, -1)).join("")}
+    <div class="lbl" style="margin-top:12px">Получил${c.ins.length > 1 ? " (" + c.ins.length + " платежа)" : ""}</div>${c.ins.map(o => line(o, 1)).join("")}
+    <div class="sheet" style="margin-top:14px"><div class="kpis"><div><small>Курс сделки</small><b>${nf(c.rate, 2)}</b></div><div><small>Отдал ≈</small><b>${eur(c.outEur)}</b></div><div><small>Получил ≈</small><b>${eur(c.inEur)}</b></div></div>
+    <p class="note">По рыночному курсу на эту дату ${esc(c.a1)} стоил ${eur(c.outEur)}, а получилось ${eur(c.inEur)}: <b class="${pos ? "in" : "out"}">${pos ? "выгоднее на " : "дороже на "}${eur(Math.abs(c.diff))}</b>. Это курсовая разница P2P, в доходы и расходы она не попадает.</p></div>`);
+}
 function ops(){
-  const f = state.filter;
-  const list = state.data.ops.filter(o => f === "all" ? o.kind !== "adjustment" : f === "review" ? (o.status === "needs_review" && o.kind !== "adjustment") : f === "out" ? isSpend(o) : f === "in" ? o.kind === "income" : f === "move" ? (o.kind === "transfer" || o.kind === "exchange") : o.kind === "adjustment").slice(0, 200);
+  const f = state.filter, EG = exGroups(), seen = {};
+  const list = state.data.ops.filter(o => f === "all" ? o.kind !== "adjustment" : f === "review" ? (o.status === "needs_review" && o.kind !== "adjustment") : f === "out" ? isSpend(o) : f === "in" ? o.kind === "income" : f === "move" ? (o.kind === "transfer" || o.kind === "exchange") : o.kind === "adjustment").filter(o => { if (o.gid && EG[o.gid]) { if (seen[o.gid]) return false; seen[o.gid] = 1; } return true; }).slice(0, 200);
   state.vis = list;
   const nr = toReview().length;
   const chips = [["all","Все"], ...(nr ? [["review","Разобрать (" + nr + ")"]] : []), ["out","Расходы"],["in","Доходы"],["move","Обмены и переводы"],["adj","Корректировки"]]
@@ -704,6 +731,7 @@ function ops(){
     const label = dt.toLocaleDateString("ru-RU", {day:"numeric", month:"long", weekday:"short"});
     return `<div class="day">${label}</div><div class="sheet">${g.items.map(o => {
       const idx = list.indexOf(o);
+      if (o.gid && EG[o.gid]) return exRow(o.gid, EG[o.gid]);
       const title = o.who || o.note || o.cat || KIND[o.kind];
       const meta = [o.cat || KIND[o.kind], o.acc, o.who && o.note ? o.note : null].filter(Boolean).join(" · ");
       const cls = o.amt < 0 ? "out" : "in";
