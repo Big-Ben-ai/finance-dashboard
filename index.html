@@ -209,6 +209,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .pan textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;resize:vertical}
 .lim-row input.wide{width:100%;text-align:left}
 .pan .row.op{padding:11px 0}
+
+.swipe{position:relative;overflow:hidden}
+.swdel{position:absolute;right:0;top:0;bottom:0;width:92px;background:var(--out);color:#fff;font:inherit;font-weight:600;border:0}
+.swipe>.row{position:relative;background:var(--sheet);transition:transform .22s ease;width:100%;text-align:left}
+.swipe.open>.row{transform:translateX(-92px)}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -665,8 +670,8 @@ function openCat(i){
   state.back = () => openCat(i);
   openSheet(`<h2>${esc(c.nm)}</h2><div class="sub2">${esc(P.label)} · ${eur(c.v)} · ${list.length} ${plural(list.length,"операция","операции","операций")}</div>
     ${list.length ? list.map(o => { const t = new Date(o.d); const title = o.who || o.note || o.cat || KIND[o.kind];
-      return `<button class="row op" onclick="openOpId('${o.id}')"><div class="l"><div>${esc(title)}</div><div class="meta">${t.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})}, ${t.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})} · ${esc(o.acc)}${o.who && o.note ? " · " + esc(o.note) : ""}</div></div>
-        <div class="r"><div class="out">−${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.asset!=="EUR"&&o.eur?`<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>`:""}</div></button>`; }).join("") : '<div class="empty">Операций нет.</div>'}`);
+      return swipe([o.id], `<button class="row op" onclick="openOpId('${o.id}')"><div class="l"><div>${esc(title)}</div><div class="meta">${t.toLocaleDateString("ru-RU",{day:"numeric",month:"short"})}, ${t.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})} · ${esc(o.acc)}${o.who && o.note ? " · " + esc(o.note) : ""}</div></div>
+        <div class="r"><div class="out">−${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.asset!=="EUR"&&o.eur?`<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>`:""}</div></button>`); }).join("") : '<div class="empty">Операций нет.</div>'}`);
 }
 
 function trend(){
@@ -688,6 +693,21 @@ function trend(){
 }
 
 const KIND = {expense:"Расход", income:"Доход", transfer:"Перевод", exchange:"Обмен", fee:"Комиссия", adjustment:"Корректировка"};
+
+function swipe(ids, inner){ return `<div class="swipe" data-ids="${ids.join(",")}"><button class="swdel" onclick="delOps(this)" aria-label="Удалить операцию">Удалить</button>${inner}</div>`; }
+async function delOps(btn){
+  const ids = btn.parentElement.dataset.ids.split(",");
+  btn.disabled = true; btn.textContent = "…";
+  try {
+    await post({action:"delete_tx", ids});
+    state.data.ops = state.data.ops.filter(o => !ids.includes(o.id));
+    state.back = null; closeSheet(); toast(ids.length > 1 ? "Обмен удалён" : "Операция удалена"); render();
+  } catch (e) { btn.disabled = false; btn.textContent = "Удалить"; toast(e.message); }
+}
+let swX = 0, swY = 0, swEl = null, swAt = 0;
+document.addEventListener("touchstart", e => { const t = e.touches[0]; swX = t.clientX; swY = t.clientY; swEl = e.target.closest(".swipe"); document.querySelectorAll(".swipe.open").forEach(x => { if (x !== swEl) x.classList.remove("open"); }); }, {passive:true});
+document.addEventListener("touchend", e => { if (!swEl) return; const t = e.changedTouches[0], dx = t.clientX - swX, dy = t.clientY - swY; if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) { swEl.classList.toggle("open", dx < 0); swAt = Date.now(); } swEl = null; }, {passive:true});
+document.addEventListener("click", e => { const w = e.target.closest(".swipe"); if (!w || e.target.closest(".swdel")) return; if (Date.now() - swAt < 500) { e.stopPropagation(); e.preventDefault(); return; } if (w.classList.contains("open")) { w.classList.remove("open"); e.stopPropagation(); e.preventDefault(); } }, true);
 function exGroups(){
   const m = {};
   state.data.ops.forEach(o => { if (o.gid && o.kind === "exchange") (m[o.gid] = m[o.gid] || []).push(o); });
@@ -731,13 +751,14 @@ function ops(){
     const label = dt.toLocaleDateString("ru-RU", {day:"numeric", month:"long", weekday:"short"});
     return `<div class="day">${label}</div><div class="sheet">${g.items.map(o => {
       const idx = list.indexOf(o);
-      if (o.gid && EG[o.gid]) return exRow(o.gid, EG[o.gid]);
+      if (o.gid && EG[o.gid]) return swipe(EG[o.gid].map(x => x.id), exRow(o.gid, EG[o.gid]));
       const title = o.who || o.note || o.cat || KIND[o.kind];
       const meta = [o.cat || KIND[o.kind], o.acc, o.who && o.note ? o.note : null].filter(Boolean).join(" · ");
       const cls = o.amt < 0 ? "out" : "in";
       const glyph = {expense:"↑", fee:"↑", income:"↓", transfer:"⇄", exchange:"⇄", adjustment:"≈"}[o.kind] || "·";
-      return `<${o.kind === "adjustment" ? "div" : "button"} class="row op" ${o.kind === "adjustment" ? "" : `onclick="openOp(${idx})" aria-label="Изменить: ${esc(title)}"`}><span class="ic ${o.kind}">${glyph}</span><div class="l"><div>${esc(title)}${o.status === "needs_review" && o.kind !== "adjustment" ? '<span class="badge">разобрать</span>' : ""}</div><div class="meta">${esc(meta)}</div></div>
+      const rowHtml = `<${o.kind === "adjustment" ? "div" : "button"} class="row op" ${o.kind === "adjustment" ? "" : `onclick="openOp(${idx})" aria-label="Изменить: ${esc(title)}"`}><span class="ic ${o.kind}">${glyph}</span><div class="l"><div>${esc(title)}${o.status === "needs_review" && o.kind !== "adjustment" ? '<span class="badge">разобрать</span>' : ""}</div><div class="meta">${esc(meta)}</div></div>
         <div class="r"><div class="${cls}">${o.amt<0?"−":"+"}${nf(Math.abs(o.amt), dec(o.asset))} ${esc(o.asset)}</div>${o.asset!=="EUR"&&o.eur?`<div class="meta">≈ ${eur(Math.abs(o.eur))}</div>`:""}</div></${o.kind === "adjustment" ? "div" : "button"}>`;
+      return o.kind === "adjustment" ? rowHtml : swipe([o.id], rowHtml);
     }).join("")}</div>`;
   }).join("");
   return `<div class="chips">${chips}</div>${html}`;
