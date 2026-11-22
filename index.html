@@ -215,6 +215,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .swipe>.row{position:relative;background:var(--sheet);transition:transform .22s ease;width:100%;text-align:left}
 .swipe.open>.row{transform:translateX(-92px)}
 .kpis .ut{display:block;margin-top:2px;color:var(--ink-3)}
+
+.searchbox{margin:0 0 10px}
+.searchbox input{width:100%;font:inherit;color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:11px 14px}
+.searchbox input::placeholder{color:var(--ink-3)}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -737,13 +741,22 @@ function openEx(g){
     <p class="note">По рыночному курсу на эту дату ${esc(c.a1)} стоил ${eur(c.outEur)}, а получилось ${eur(c.inEur)}: <b class="${pos ? "in" : "out"}">${pos ? "выгоднее на " : "дороже на "}${eur(Math.abs(c.diff))}</b>. Это курсовая разница P2P, в доходы и расходы она не попадает.</p></div>`);
 }
 function ops(){
-  const f = state.filter, EG = exGroups(), seen = {};
-  const list = state.data.ops.filter(o => f === "all" ? o.kind !== "adjustment" : f === "review" ? (o.status === "needs_review" && o.kind !== "adjustment") : f === "out" ? isSpend(o) : f === "in" ? o.kind === "income" : f === "move" ? (o.kind === "transfer" || o.kind === "exchange") : o.kind === "adjustment").filter(o => { if (o.gid && EG[o.gid]) { if (seen[o.gid]) return false; seen[o.gid] = 1; } return true; }).slice(0, 200);
+  return `<div class="searchbox"><input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder="Поиск: магазин, заметка, сумма, дата" value="${esc(state.q || "")}" oninput="setQ(this.value)" aria-label="Поиск по операциям"></div><div id="opsbody">${opsBody()}</div>`;
+}
+function setQ(v){ state.q = v; const b = $("#opsbody"); if (b) b.innerHTML = opsBody(); }
+function matchQ(o, q){
+  const t = new Date(o.d), d1 = t.toLocaleDateString("ru-RU", {day:"numeric", month:"long"}), d2 = t.toLocaleDateString("ru-RU", {day:"2-digit", month:"2-digit"});
+  const hay = [o.who, o.note, o.cat, o.acc, KIND[o.kind], o.asset, d1, d2, String(Math.abs(o.amt)).replace(".", ","), String(Math.abs(o.amt)), String(Math.round(Math.abs(o.eur || 0)))].filter(Boolean).join(" ").toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+}
+function opsBody(){
+  const f = state.filter, EG = exGroups(), seen = {}, q = (state.q || "").trim();
+  const list = state.data.ops.filter(o => !q || matchQ(o, q)).filter(o => f === "all" ? o.kind !== "adjustment" : f === "review" ? (o.status === "needs_review" && o.kind !== "adjustment") : f === "out" ? isSpend(o) : f === "in" ? o.kind === "income" : f === "move" ? (o.kind === "transfer" || o.kind === "exchange") : o.kind === "adjustment").filter(o => { if (o.gid && EG[o.gid]) { if (seen[o.gid]) return false; seen[o.gid] = 1; } return true; }).slice(0, 200);
   state.vis = list;
   const nr = toReview().length;
   const chips = [["all","Все"], ...(nr ? [["review","Разобрать (" + nr + ")"]] : []), ["out","Расходы"],["in","Доходы"],["move","Обмены и переводы"],["adj","Корректировки"]]
     .map(([k,t]) => `<button aria-pressed="${f===k}" onclick="filt('${k}')">${t}</button>`).join("");
-  if (!list.length) return `<div class="chips">${chips}</div><div class="sheet empty">Здесь пока пусто.</div>`;
+  if (!list.length) return `<div class="chips">${chips}</div><div class="sheet empty">${q ? "Ничего не нашлось по «" + esc(q) + "». Попробуй часть названия или сумму." : "Здесь пока пусто."}</div>`;
   let html = "", day = "";
   const groups = [];
   list.forEach(o => { const k = o.d.slice(0,10); if (k !== day) { day = k; groups.push({k, items:[]}); } groups[groups.length-1].items.push(o); });
