@@ -214,6 +214,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .swdel{position:absolute;right:0;top:0;bottom:0;width:92px;background:var(--out);color:#fff;font:inherit;font-weight:600;border:0}
 .swipe>.row{position:relative;background:var(--sheet);transition:transform .22s ease;width:100%;text-align:left}
 .swipe.open>.row{transform:translateX(-92px)}
+.kpis .ut{display:block;margin-top:2px;color:var(--ink-3)}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -314,7 +315,7 @@ function render(){
     <section class="hero" aria-label="Общий баланс">
       <div class="cap">Всего денег</div>
       <div class="total">${nf(Math.round(total))}<span class="cur">€</span></div>
-      <div class="sub">${usd ? "≈ " + nf(Math.round(usd)) + " $, " : ""}${new Set(d.holdings.map(h=>h.account)).size} ${plural(new Set(d.holdings.map(h=>h.account)).size,"счёт","счёта","счетов")}</div>
+      <div class="sub">${(d.rates.USDT || d.rates.USD) ? "≈ " + nf(Math.round(total / (d.rates.USDT || d.rates.USD))) + " USDT, " : ""}${usd && d.rates.USDT && Math.abs(d.rates.USDT / d.rates.USD - 1) > 0.003 ? nf(Math.round(usd)) + " $, " : ""}${new Set(d.holdings.map(h=>h.account)).size} ${plural(new Set(d.holdings.map(h=>h.account)).size,"счёт","счёта","счетов")}</div>
       <div class="ribbon" role="img" aria-label="Распределение денег по группам">
         ${groups.map((g,i) => `<span style="flex:${g.eur};background:${color(g.name)};animation-delay:${i*90}ms"></span>`).join("")}
       </div>
@@ -606,7 +607,7 @@ function period(){
 }
 const inP = (o, a, b) => { const t = new Date(o.d).getTime(); return t >= a.getTime() && t < b.getTime(); };
 function spend(){
-  const d = state.data, P = period(), i = state.months.indexOf(state.month);
+  const d = state.data, P = period(), ut = v => (d.rates.USDT || d.rates.USD) ? "≈ " + nf(Math.round(v / (d.rates.USDT || d.rates.USD))) + " USDT" : "", i = state.months.indexOf(state.month);
   const mo = d.ops.filter(o => inP(o, P.t0, P.t1));
   const out = mo.filter(isSpend).reduce((s,o)=>s - o.eur, 0);
   const inc = mo.filter(o => o.kind === "income").reduce((s,o)=>s + o.eur, 0);
@@ -629,9 +630,9 @@ function spend(){
     ${nav}
     <div class="sheet">
       <div class="kpis">
-        <div><small>Расходы</small><b class="out">${eur(out)}</b></div>
-        <div><small>Доходы</small><b class="in">${eur(inc)}</b></div>
-        <div><small>Итог</small><b>${(inc-out>=0?"+":"−") + eur(Math.abs(inc-out))}</b></div>
+        <div><small>Расходы</small><b class="out">${eur(out)}</b><small class="ut">${ut(out)}</small></div>
+        <div><small>Доходы</small><b class="in">${eur(inc)}</b><small class="ut">${ut(inc)}</small></div>
+        <div><small>Итог</small><b>${(inc-out>=0?"+":"−") + eur(Math.abs(inc-out))}</b><small class="ut">${ut(Math.abs(inc-out))}</small></div>
       </div>
       ${note ? `<p class="note">${note}</p>` : ""}
     </div>
